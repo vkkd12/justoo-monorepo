@@ -195,6 +195,19 @@ export const customerNotifications = pgTable('customer_notifications', {
     createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const riderNotifications = pgTable('rider_notifications', {
+    id: serial('id').primaryKey(),
+    riderId: integer('rider_id').notNull(),
+    type: notificationType('type').notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    message: text('message').notNull(),
+    data: text('data'), // JSON string for additional data
+    isRead: integer('is_read').default(0).notNull(),
+    sentAt: timestamp('sent_at').defaultNow(),
+    readAt: timestamp('read_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
 // Aliases for backward compatibility
 export const justoo_admins = justooAdmins;
 export const justoo_riders = justooRiders;
@@ -207,3 +220,4 @@ export const users = inventoryUsers;
 export const customer_addresses = customerAddresses;
 export const delivery_zones = deliveryZones;
 export const customer_notifications = customerNotifications;
+export const rider_notifications = riderNotifications;

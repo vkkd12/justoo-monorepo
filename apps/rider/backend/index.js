@@ -15,7 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/api/order", orderRoutes);
 app.use("/api/rider", riderRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/delivery", deliveryRoutes);

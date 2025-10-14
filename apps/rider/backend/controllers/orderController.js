@@ -1,6 +1,64 @@
 import { db } from "../db/index.js";
 import { orders, orderItems, customerAddresses } from "../../../../packages/db/schema.js";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
+
+// 0. Get available orders for riders to accept
+export const getAvailableOrders = async (req, res) => {
+    try {
+        // Get orders that are placed and not yet assigned to any rider
+        const availableOrders = await db
+            .select({
+                id: orders.id,
+                customerId: orders.customerId,
+                status: orders.status,
+                totalAmount: orders.totalAmount,
+                itemCount: orders.itemCount,
+                subtotal: orders.subtotal,
+                deliveryFee: orders.deliveryFee,
+                taxAmount: orders.taxAmount,
+                orderPlacedAt: orders.orderPlacedAt,
+                estimatedDeliveryTime: orders.estimatedDeliveryTime,
+                deliveryAddressId: orders.deliveryAddressId
+            })
+            .from(orders)
+            .where(
+                and(
+                    eq(orders.status, 'placed'),
+                    sql`${orders.riderId} IS NULL`
+                )
+            )
+            .orderBy(sql`${orders.orderPlacedAt} DESC`);
+
+        // Get delivery addresses for the orders
+        const deliveryAddressIds = availableOrders.map(order => order.deliveryAddressId);
+        let deliveryAddresses = [];
+
+        if (deliveryAddressIds.length > 0) {
+            deliveryAddresses = await db
+                .select()
+                .from(customerAddresses)
+                .where(inArray(customerAddresses.id, deliveryAddressIds));
+        }
+
+        // Combine orders with their delivery addresses
+        const ordersWithAddresses = availableOrders.map(order => ({
+            ...order,
+            deliveryAddress: deliveryAddresses.find(addr => addr.id === order.deliveryAddressId) || null
+        }));
+
+        res.status(200).json({
+            success: true,
+            orders: ordersWithAddresses,
+        });
+    } catch (error) {
+        console.error("Error fetching available orders:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+};
 
 // 1. Get the current order assigned to the rider (status: out_for_delivery or ready, etc.)
 export const getCurrentOrderForRider = async (req, res) => {
@@ -20,7 +78,7 @@ export const getCurrentOrderForRider = async (req, res) => {
             .limit(1);
 
         if (currentOrder.length === 0) {
-            return res.status(404).json({
+            return res.status(200).json({
                 success: false,
                 message: "No current order assigned to this rider.",
             });

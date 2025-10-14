@@ -145,11 +145,11 @@ export const failDelivery = async (req, res) => {
             });
         }
 
-        // Update order status to failed
+        // Update order status to cancelled (since 'failed' is not a valid status)
         const updatedOrder = await db
             .update(orders)
             .set({
-                status: 'failed',
+                status: 'cancelled',
                 deliveryNotes: failureNotes,
                 updatedAt: new Date(),
             })
@@ -185,7 +185,7 @@ export const getDeliveryHistory = async (req, res) => {
             .where(
                 and(
                     eq(orders.riderId, riderId),
-                    sql`${orders.status} IN ('delivered', 'failed', 'cancelled')`
+                    sql`${orders.status} IN ('delivered', 'cancelled')`
                 )
             );
 
@@ -207,7 +207,7 @@ export const getDeliveryHistory = async (req, res) => {
             .where(
                 and(
                     eq(orders.riderId, riderId),
-                    sql`${orders.status} IN ('delivered', 'failed', 'cancelled')`
+                    sql`${orders.status} IN ('delivered', 'cancelled')`
                 )
             );
 
@@ -271,9 +271,9 @@ export const getDeliveryStats = async (req, res) => {
             .select({
                 totalDeliveries: sql`COUNT(*)`,
                 successfulDeliveries: sql`COUNT(CASE WHEN ${orders.status} = 'delivered' THEN 1 END)`,
-                failedDeliveries: sql`COUNT(CASE WHEN ${orders.status} = 'failed' THEN 1 END)`,
+                failedDeliveries: sql`COUNT(CASE WHEN ${orders.status} = 'cancelled' THEN 1 END)`,
                 cancelledDeliveries: sql`COUNT(CASE WHEN ${orders.status} = 'cancelled' THEN 1 END)`,
-                averageDeliveryTime: sql`AVG(EXTRACT(EPOCH FROM (${orders.deliveredAt} - ${orders.actualDeliveryTime})) / 60)`, // in minutes
+                averageDeliveryTime: sql`AVG(EXTRACT(EPOCH FROM ("delivered_at" - "actual_delivery_time")) / 60)`, // in minutes
                 totalEarnings: sql`SUM(${orders.deliveryFee})`,
             })
             .from(orders)

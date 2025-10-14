@@ -1,5 +1,5 @@
 import db from '../config/dbConfig.js';
-import { orders, orderItems, items, customerAddresses, justooPayments } from '@justoo/db';
+import { orders, orderItems, items, customerAddresses, justooPayments, riderNotifications, justooRiders } from '@justoo/db';
 import { eq, and, sql, desc, inArray } from 'drizzle-orm';
 import { successResponse, errorResponse, getPaginationData, generateOrderNumber } from '../utils/response.js';
 import { carts } from './cartController.js';
@@ -62,8 +62,7 @@ export const createOrder = async (req, res) => {
         // Calculate order totals (simplified - no distance-based zones needed)
         const subtotal = cart.total;
         const deliveryFee = subtotal < 100 ? 40 : 0; // 40 rs delivery fee if order < 100
-        const taxAmount = subtotal * 0.05; // 5% tax
-        const totalAmount = subtotal + deliveryFee + taxAmount;
+        const totalAmount = subtotal + deliveryFee;
 
         // Use default delivery time (15 minutes)
         const defaultDeliveryTime = 15;
@@ -131,6 +130,41 @@ export const createOrder = async (req, res) => {
 
         // Clear customer's cart
         carts.delete(customerId);
+
+        // Create notifications for all active riders
+        try {
+            const activeRiders = await db
+                .select({ id: justooRiders.id, name: justooRiders.name })
+                .from(justooRiders)
+                .where(
+                    and(
+                        eq(justooRiders.isActive, 1),
+                        eq(justooRiders.status, 'active')
+                    )
+                );
+
+            if (activeRiders.length > 0) {
+                const notifications = activeRiders.map(rider => ({
+                    riderId: rider.id,
+                    type: 'order',
+                    title: 'New Order Available',
+                    message: `A new order #${orderNumber} is available for delivery. Total: ₹${totalAmount}`,
+                    data: JSON.stringify({
+                        orderId: newOrder.id,
+                        orderNumber,
+                        totalAmount,
+                        itemCount: cart.itemCount,
+                        deliveryAddress: address[0]
+                    }),
+                    sentAt: new Date()
+                }));
+
+                await db.insert(riderNotifications).values(notifications);
+            }
+        } catch (notificationError) {
+            console.error('Error creating rider notifications:', notificationError);
+            // Don't fail the order creation if notifications fail
+        }
 
         // Get complete order details
         const orderDetails = await getOrderDetails(newOrder.id);

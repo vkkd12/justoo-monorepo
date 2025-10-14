@@ -6,10 +6,14 @@ import {
     updateOrderStatus,
     acceptOrder,
     getOrderDetails,
+    getAvailableOrders,
 } from "../controllers/orderController.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
+
+// Get available orders for riders to accept
+router.get("/available", authMiddleware, getAvailableOrders);
 
 // Get the current order assigned to the rider
 router.get("/current", authMiddleware, getCurrentOrderForRider);

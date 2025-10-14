@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { customerNotifications } from "../../../../packages/db/schema.js";
+import { riderNotifications } from "../../../../packages/db/schema.js";
 import { eq, and, sql, desc } from "drizzle-orm";
 
 // Get notifications for the rider
@@ -12,16 +12,16 @@ export const getNotifications = async (req, res) => {
 
         let query = db
             .select()
-            .from(customerNotifications)
-            .where(eq(customerNotifications.customerId, riderId));
+            .from(riderNotifications)
+            .where(eq(riderNotifications.riderId, riderId));
 
         // Filter for unread notifications if requested
         if (unreadOnly === 'true') {
-            query = query.where(eq(customerNotifications.isRead, 0));
+            query = query.where(eq(riderNotifications.isRead, 0));
         }
 
         // Order by creation date (newest first)
-        query = query.orderBy(desc(customerNotifications.sentAt));
+        query = query.orderBy(desc(riderNotifications.sentAt));
 
         // Apply pagination
         const notifications = await query.limit(parseInt(limit)).offset(offset);
@@ -29,11 +29,11 @@ export const getNotifications = async (req, res) => {
         // Get total count for pagination
         let countQuery = db
             .select({ count: sql`COUNT(*)` })
-            .from(customerNotifications)
-            .where(eq(customerNotifications.customerId, riderId));
+            .from(riderNotifications)
+            .where(eq(riderNotifications.riderId, riderId));
 
         if (unreadOnly === 'true') {
-            countQuery = countQuery.where(eq(customerNotifications.isRead, 0));
+            countQuery = countQuery.where(eq(riderNotifications.isRead, 0));
         }
 
         const totalResult = await countQuery;
@@ -71,15 +71,15 @@ export const markNotificationAsRead = async (req, res) => {
 
         // Update notification as read
         const updatedNotification = await db
-            .update(customerNotifications)
+            .update(riderNotifications)
             .set({
                 isRead: 1,
                 readAt: new Date(),
             })
             .where(
                 and(
-                    eq(customerNotifications.id, parseInt(notificationId)),
-                    eq(customerNotifications.customerId, riderId)
+                    eq(riderNotifications.id, parseInt(notificationId)),
+                    eq(riderNotifications.riderId, riderId)
                 )
             )
             .returning();
@@ -113,15 +113,15 @@ export const markAllNotificationsAsRead = async (req, res) => {
 
         // Update all unread notifications as read
         await db
-            .update(customerNotifications)
+            .update(riderNotifications)
             .set({
                 isRead: 1,
                 readAt: new Date(),
             })
             .where(
                 and(
-                    eq(customerNotifications.customerId, riderId),
-                    eq(customerNotifications.isRead, 0)
+                    eq(riderNotifications.riderId, riderId),
+                    eq(riderNotifications.isRead, 0)
                 )
             );
 
@@ -147,19 +147,19 @@ export const getNotificationCount = async (req, res) => {
         // Get count of unread notifications
         const unreadCount = await db
             .select({ count: sql`COUNT(*)` })
-            .from(customerNotifications)
+            .from(riderNotifications)
             .where(
                 and(
-                    eq(customerNotifications.customerId, riderId),
-                    eq(customerNotifications.isRead, 0)
+                    eq(riderNotifications.riderId, riderId),
+                    eq(riderNotifications.isRead, 0)
                 )
             );
 
         // Get total count
         const totalCount = await db
             .select({ count: sql`COUNT(*)` })
-            .from(customerNotifications)
-            .where(eq(customerNotifications.customerId, riderId));
+            .from(riderNotifications)
+            .where(eq(riderNotifications.riderId, riderId));
 
         res.status(200).json({
             success: true,
@@ -182,9 +182,9 @@ export const getNotificationCount = async (req, res) => {
 export const createNotification = async (riderId, type, title, message, data = null) => {
     try {
         const notification = await db
-            .insert(customerNotifications)
+            .insert(riderNotifications)
             .values({
-                customerId: riderId,
+                riderId: riderId,
                 type,
                 title,
                 message,
@@ -209,11 +209,11 @@ export const deleteNotification = async (req, res) => {
 
         // Delete notification
         const deletedNotification = await db
-            .delete(customerNotifications)
+            .delete(riderNotifications)
             .where(
                 and(
-                    eq(customerNotifications.id, parseInt(notificationId)),
-                    eq(customerNotifications.customerId, riderId)
+                    eq(riderNotifications.id, parseInt(notificationId)),
+                    eq(riderNotifications.riderId, riderId)
                 )
             )
             .returning();
