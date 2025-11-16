@@ -83,7 +83,6 @@ export const createOrder = async (req, res) => {
                     itemCount: cart.itemCount,
                     subtotal,
                     deliveryFee,
-                    taxAmount,
                     notes,
                     specialInstructions,
                     estimatedDeliveryTime: new Date(Date.now() + defaultDeliveryTime * 60 * 1000),
