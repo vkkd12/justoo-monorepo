@@ -29,8 +29,25 @@ export const getAvailableOrders = async (req, res) => {
             )
             .orderBy(sql`${orders.orderPlacedAt} DESC`);
 
+        // Get customer information using raw SQL query
+        const customerIds = [...new Set(availableOrders.map(order => order.customerId))];
+        let customers = [];
+
+        if (customerIds.length > 0) {
+            try {
+                // Try to fetch customer data from users table
+                const customerData = await db.execute(
+                    sql`SELECT id, name, phone FROM users WHERE id IN (${sql.join(customerIds.map(id => sql`${id}`), sql`, `)})`
+                );
+                customers = customerData.rows || customerData || [];
+            } catch (userError) {
+                console.log('Could not fetch user data:', userError.message);
+                // Continue without customer names
+            }
+        }
+
         // Get delivery addresses for the orders
-        const deliveryAddressIds = availableOrders.map(order => order.deliveryAddressId);
+        const deliveryAddressIds = availableOrders.map(order => order.deliveryAddressId).filter(Boolean);
         let deliveryAddresses = [];
 
         if (deliveryAddressIds.length > 0) {
@@ -40,11 +57,31 @@ export const getAvailableOrders = async (req, res) => {
                 .where(inArray(customerAddresses.id, deliveryAddressIds));
         }
 
-        // Combine orders with their delivery addresses
-        const ordersWithAddresses = availableOrders.map(order => ({
-            ...order,
-            deliveryAddress: deliveryAddresses.find(addr => addr.id === order.deliveryAddressId) || null
-        }));
+        // Get order items for all orders
+        const orderIds = availableOrders.map(order => order.id);
+        let allOrderItems = [];
+
+        if (orderIds.length > 0) {
+            allOrderItems = await db
+                .select()
+                .from(orderItems)
+                .where(inArray(orderItems.orderId, orderIds));
+        }
+
+        // Combine orders with their delivery addresses, customer info, and items
+        const ordersWithAddresses = availableOrders.map(order => {
+            const customer = customers.find(c => c.id === order.customerId);
+            const deliveryAddress = deliveryAddresses.find(addr => addr.id === order.deliveryAddressId);
+            const items = allOrderItems.filter(item => item.orderId === order.id);
+
+            return {
+                ...order,
+                customerName: customer?.name || `Customer #${order.customerId}`,
+                customerPhone: customer?.phone || null,
+                deliveryAddress: deliveryAddress || null,
+                items: items || []
+            };
+        });
 
         res.status(200).json({
             success: true,
@@ -376,6 +413,23 @@ export const getOrderDetails = async (req, res) => {
             });
         }
 
+        // Get customer information
+        let customerName = `Customer #${order[0].customerId}`;
+        let customerPhone = null;
+
+        try {
+            const customerData = await db.execute(
+                sql`SELECT id, name, phone FROM users WHERE id = ${order[0].customerId}`
+            );
+            const customer = customerData.rows?.[0] || customerData?.[0];
+            if (customer) {
+                customerName = customer.name || customerName;
+                customerPhone = customer.phone;
+            }
+        } catch (userError) {
+            console.log('Could not fetch customer data:', userError.message);
+        }
+
         // Get order items
         const orderItemsList = await db
             .select()
@@ -392,6 +446,8 @@ export const getOrderDetails = async (req, res) => {
             success: true,
             order: {
                 ...order[0],
+                customerName,
+                customerPhone,
                 items: orderItemsList,
                 deliveryAddress: deliveryAddress[0] || null,
             },

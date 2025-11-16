@@ -335,18 +335,20 @@ export const updateRider = async (req, res) => {
 
         // Check for duplicate phone/email if being updated
         if (phone || email) {
+            const conditions = [sql`${riders.id} != ${parseInt(id)}`];
+            const orConditions = [];
+
+            if (phone) orConditions.push(eq(riders.phone, phone));
+            if (email) orConditions.push(eq(riders.email, email));
+
+            if (orConditions.length > 0) {
+                conditions.push(or(...orConditions));
+            }
+
             const duplicateCheck = await db
                 .select()
                 .from(riders)
-                .where(
-                    and(
-                        sql`${riders.id} != ${parseInt(id)}`,
-                        or(
-                            phone ? eq(riders.phone, phone) : undefined,
-                            email ? eq(riders.email, email) : undefined
-                        ).filter(Boolean)
-                    )
-                )
+                .where(and(...conditions))
                 .limit(1);
 
             if (duplicateCheck.length > 0) {
@@ -357,7 +359,7 @@ export const updateRider = async (req, res) => {
 
         // Update rider
         const updateData = {
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date()
         };
 
         if (name !== undefined) updateData.name = name;
