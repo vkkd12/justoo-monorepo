@@ -21,10 +21,6 @@ const navigation = [
     { name: 'Reports', href: '/dashboard/reports', icon: ChartBarIcon },
 ];
 
-const adminOnlyNavigation = [
-    { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
-];
-
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ');
 }
@@ -35,7 +31,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, currentPath }) {
 
     const allNavigation = [
         ...navigation,
-        ...(isAdmin ? adminOnlyNavigation : [])
     ];
 
     const SidebarContent = () => (

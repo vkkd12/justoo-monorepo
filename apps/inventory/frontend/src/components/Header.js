@@ -27,7 +27,6 @@ export default function Header({ setSidebarOpen, user }) {
 
     const userNavigation = [
         { name: 'Your profile', href: '/dashboard/profile' },
-        { name: 'Settings', href: '/dashboard/settings' },
         { name: 'Sign out', onClick: handleLogout },
     ];
 

@@ -500,7 +500,7 @@ export const getAllItems = async (req, res) => {
         // Add search filter if provided
         if (search) {
             whereConditions.push(
-                sql`LOWER(${itemTable.name}) LIKE LOWER(${'%' + search + '%'})`
+                sql`LOWER(${itemTable.name}) LIKE LOWER(${`%${search}%`})`
             );
         }
 

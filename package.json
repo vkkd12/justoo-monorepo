@@ -2,13 +2,21 @@
   "name": "monorepo",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "packageManager": "pnpm@9.6.0",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
-    "clean": "turbo clean"
+    "clean": "turbo clean",
+    "start": "node index.js",
+    "start:gateway": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0"
   },
   "devDependencies": {
     "turbo": "^2.0.10"

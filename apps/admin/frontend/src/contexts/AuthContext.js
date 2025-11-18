@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         const response = await authAPI.login({ username, password });
+        console.log(response);
         // After login, backend sets httpOnly cookie. Fetch profile next.
         const me = await checkAuth();
         return { api: response.data, user: me };

@@ -2,6 +2,8 @@
 const nextConfig = {
     // In dev, speed up by disabling reactStrictMode if needed
     reactStrictMode: true,
+    // Set workspace root to silence monorepo warning
+    outputFileTracingRoot: '../../..',
     async headers() {
         return [
             {
@@ -16,7 +18,7 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: 'http://localhost:3002/api/:path*',
+                destination: 'http://localhost:3000/admin/api/:path*',
             },
         ];
     },

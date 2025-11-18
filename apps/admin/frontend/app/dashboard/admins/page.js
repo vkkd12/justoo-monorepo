@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/utils/api';
+import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 import {
     PlusIcon,

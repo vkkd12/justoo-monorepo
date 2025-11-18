@@ -24,7 +24,6 @@ const navigation = [
     { name: 'Admins', href: '/dashboard/admins', icon: UsersIcon, superAdminOnly: true },
     { name: 'Inventory Admins', href: '/dashboard/inventory-admins', icon: ShieldCheckIcon, superAdminOnly: true },
     { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
-    { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
 ];
 
 function classNames(...classes) {
