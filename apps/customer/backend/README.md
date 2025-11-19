@@ -36,21 +36,7 @@ A comprehensive backend API for the Justoo 10-minute delivery platform's custome
    pnpm install
    ```
 
-2. **Environment Setup:**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Update the `.env` file with your configuration:
-
-   ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/justoo_db
-   JWT_SECRET=your-super-secret-jwt-key-here
-   FRONTEND_URL=http://localhost:3000
-   ```
-
-3. **Database Setup:**
+2. **Database Setup:**
 
    ```bash
    # Push schema to database
@@ -60,66 +46,18 @@ A comprehensive backend API for the Justoo 10-minute delivery platform's custome
    pnpm run db:seed
    ```
 
-4. **Start the server:**
+3. **Start the gateway server:**
+
+   From the root of the monorepo:
 
    ```bash
-   # Development mode
-   pnpm run dev
-
-   # Production mode
-   pnpm run start
+   # Start the unified gateway
+   pnpm start
    ```
 
-The server will start on `http://localhost:8080`
+The customer API will be available at `http://localhost:3000/customer/api`
 
-## API Endpoints
 
-### Authentication
-
-- `POST /api/auth/register` - Register new customer
-- `POST /api/auth/login` - Customer login
-- `GET /api/auth/profile` - Get customer profile
-- `PUT /api/auth/profile` - Update customer profile
-- `PUT /api/auth/change-password` - Change password
-- `POST /api/auth/logout` - Logout
-
-### Items
-
-- `GET /api/items` - Get items with filters
-- `GET /api/items/categories` - Get all categories
-- `GET /api/items/featured` - Get featured items
-- `GET /api/items/search` - Search items
-- `GET /api/items/suggestions` - Get personalized suggestions
-- `GET /api/items/category/:category` - Get items by category
-- `GET /api/items/:id` - Get item details
-
-### Cart
-
-- `GET /api/cart` - Get customer's cart
-- `GET /api/cart/summary` - Get cart summary for checkout
-- `POST /api/cart/add` - Add item to cart
-- `PUT /api/cart/item/:itemId` - Update cart item quantity
-- `DELETE /api/cart/item/:itemId` - Remove item from cart
-- `DELETE /api/cart` - Clear cart
-
-### Orders
-
-- `POST /api/orders` - Place new order
-- `GET /api/orders` - Get customer's orders
-- `GET /api/orders/stats` - Get order statistics
-- `GET /api/orders/:orderId` - Get order details
-- `PUT /api/orders/:orderId/cancel` - Cancel order
-
-### Addresses
-
-- `GET /api/addresses` - Get customer's addresses
-- `GET /api/addresses/default` - Get default address
-- `GET /api/addresses/validate` - Validate address coordinates
-- `GET /api/addresses/:addressId` - Get address by ID
-- `POST /api/addresses` - Add new address
-- `PUT /api/addresses/:addressId` - Update address
-- `PUT /api/addresses/:addressId/default` - Set as default address
-- `DELETE /api/addresses/:addressId` - Delete address
 
 ## Data Models
 

@@ -67,15 +67,15 @@ A comprehensive inventory management system built with Next.js frontend and Expr
    pnpm run create:minimal-users
    ```
 
-5. **Start the backend server:**
+5. **Start the gateway server:**
+
+   From the root of the monorepo:
 
    ```bash
-   pnpm start
-   # or for development with auto-reload
-   pnpm dev
+   pnpm start:gateway
    ```
 
-   The backend API will be available at `http://localhost:3001`
+   The backend API will be available at `http://localhost:3000/inventory/api`
 
 ### Frontend Setup
 
@@ -96,7 +96,7 @@ A comprehensive inventory management system built with Next.js frontend and Expr
    - Create `.env.local` file:
 
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:3001/api
+   NEXT_PUBLIC_API_URL=http://localhost:3000/inventory/api
    ```
 
 4. **Start the frontend development server:**
@@ -105,7 +105,7 @@ A comprehensive inventory management system built with Next.js frontend and Expr
    pnpm dev
    ```
 
-   The frontend will be available at `http://localhost:3000`
+   The frontend will be available at `http://localhost:3004`
 
 ## 🔐 Test Credentials
 
